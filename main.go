@@ -13,14 +13,14 @@ const (
 	ADD
 )
 
-const (
-	MOV_BITS byte = 0b10001000
-	MASK_DW  byte = 0b11111100
-	D_BITS   byte = 0b00000010
-	W_BITS   byte = 0b00000001
-	REG_MASK byte = 0b00111000
-	RM_MASK  byte = 0b00000111
-)
+//const (
+//	MOV_BITS byte = 0b10001000
+//	MASK_DW  byte = 0b11111100
+//	D_BITS   byte = 0b00000010
+//	W_BITS   byte = 0b00000001
+//	REG_MASK byte = 0b00111000
+//	RM_MASK  byte = 0b00000111
+//)
 
 var w_on_map = map[byte]string{
 	0b000: "AX",
@@ -44,9 +44,18 @@ var w_off_map = map[byte]string{
 	0b111: "BH",
 }
 
-var prog []byte
+var prog []byte             // all bytes
+var i int                   // current index int = 0
+var b byte                  // current byte
+var builder strings.Builder // builds ultimate output
+
 var err error
-var curr int = 0
+
+/*
+	TODO: Assignment 2:
+		- Register to Memory + Memory to Register
+		- Immediate to Register
+*/
 
 func main() {
 
@@ -62,54 +71,60 @@ func main() {
 		panic(err)
 	}
 
-	var builder strings.Builder
+	for i = 0; i < len(prog); {
+		b = prog[i]
 
-	for curr = 0; curr < len(prog); {
-		b := prog[curr]
-
-		dw_off := b & MASK_DW
-
-		if (dw_off ^ MOV_BITS) == 0 {
-			builder.WriteString("MOV ")
-
-			// get w bit
-			w_bit_on := (b & W_BITS) != 0
-
-			curr++
-			b2 := prog[curr]
-
-			// REG
-			reg_bytes := b2 & REG_MASK
-			reg_bytes = reg_bytes >> 3
-
-			var reg_str string
-			if w_bit_on {
-				reg_str = w_on_map[reg_bytes]
-			} else {
-				reg_str = w_off_map[reg_bytes]
-			}
-
-			// R/M
-			rm_bytes := b2 & RM_MASK
-
-			var rm_str string
-			if w_bit_on {
-				rm_str = w_on_map[rm_bytes]
-			} else {
-				rm_str = w_off_map[rm_bytes]
-			}
-
-			// d_bit == 0 --> REG is NOT the Dest --> R/M REG
-			// d_bit == 1 --> REG IS the Dest 	  --> REG R/M
-			if (b & D_BITS) == 0 {
-				builder.WriteString(fmt.Sprintf("%s %s", rm_str, reg_str))
-			} else {
-				builder.WriteString(fmt.Sprintf("%s %s", reg_str, rm_str))
-			}
-			builder.WriteString("\n")
+		if (b&0b11111100)^0b10001000 == 0 {
+			handleRegToFromRegMem()
 		}
 
-		curr++
+		i++
 	}
 	fmt.Print(builder.String())
+}
+
+// MOV #1
+func handleRegToFromRegMem() {
+
+	builder.WriteString("MOV ")
+
+	// get d, w, mod, reg, and r/m first
+	w_bit_on := (b & 0b00000001) != 0
+	d_bit_on := (b & 0b00000010) != 0
+
+	i++
+	b2 := prog[i]
+
+	// MOD
+	//mod_bits := (b2 & 0b11000000) >> 6
+
+	// REG
+	reg_bits := (b2 & 0b00111000) >> 3
+
+	// R/M
+	rm_bits := b2 & 0b00000111
+
+	// TODO: the below is just the initial homework case (mod == 11), rework for other mod cases
+	var reg_str string
+	if w_bit_on {
+		reg_str = w_on_map[reg_bits]
+	} else {
+		reg_str = w_off_map[reg_bits]
+	}
+
+	var rm_str string
+	if w_bit_on {
+		rm_str = w_on_map[rm_bits]
+	} else {
+		rm_str = w_off_map[rm_bits]
+	}
+
+	// d_bit == 0 --> REG is NOT the Dest --> R/M REG
+	// d_bit == 1 --> REG IS the Dest 	  --> REG R/M
+	if d_bit_on {
+		builder.WriteString(fmt.Sprintf("%s %s", reg_str, rm_str))
+	} else {
+		builder.WriteString(fmt.Sprintf("%s %s", rm_str, reg_str))
+	}
+	builder.WriteString("\n")
 }
