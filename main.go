@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+// TODO: Where you left off --> REGMEMTOFROMEITHER and ImmediateWRegMem seem
+//		fine with ADD,SUB,CMP --> do Immedate with accumulator (do MOV as well from
+//		the last challenge problem???
+// 		--> Then do the jumps.
+
 // TODO: this could be a much faster lookup as an array with the index
 //			being ((w << 3) | rem)
 // 			Perf test to compare?
@@ -47,7 +52,7 @@ var rm_effective_map = map[byte]string{
 
 var prog []byte             // all bytes
 var i int                   // current index int = 0
-var b byte                  // current byte
+var b, b2, b3, b4 byte      // current bytes (TODO: array?)
 var builder strings.Builder // builds ultimate output
 
 var err error
@@ -70,9 +75,18 @@ func main() {
 		b = prog[i]
 
 		if (b&0b11111100)^0b10001000 == 0 {
-			handleRegToFromRegMem()
+			movRegToFromRegMem()
 		} else if (b&0b11110000)^0b10110000 == 0 {
-			handleImmediateToReg()
+			movImmediateToReg()
+		} else if (b&0b11111100)^0b10000000 == 0 {
+			// immediate to register/mem == 0b100000XX in first byte
+			arithmeticImmediateToReg()
+		} else if (b&0b11000100)^0b00000000 == 0 {
+			// --> reg/mem and register == 0b00XXX0XX
+			arithmeticRegToFromRegMem()
+		} else if (b&0b11000100)^0b00000100 == 0 {
+			// --> immediate from accumulator == 0b00XXX1XX
+			arithmeticImmediateFromAccum()
 		}
 
 		i++
@@ -82,16 +96,19 @@ func main() {
 }
 
 // MOV #1
-func handleRegToFromRegMem() {
+func movRegToFromRegMem() {
+	regMemToFromEither("mov")
+}
 
-	builder.WriteString("mov ")
+func regMemToFromEither(opCode string) {
+	builder.WriteString(fmt.Sprintf("%s ", opCode))
 
 	// get d, w, mod, reg, and r/m first
 	w_bit_on := (b & 0b00000001) != 0
 	d_bit_on := (b & 0b00000010) != 0
 
 	i++
-	b2 := prog[i]
+	b2 = prog[i]
 
 	// MOD
 	mod_bits := (b2 & 0b11000000) >> 6
@@ -134,9 +151,9 @@ func handleRegToFromRegMem() {
 	// Check for special Direct Address Case
 	if mod_bits == 0b00 && rm_bits == 0b110 {
 		i++
-		b3 := prog[i]
+		b3 = prog[i]
 		i++
-		b4 := prog[i]
+		b4 = prog[i]
 		disp := uint16(b4) | (uint16(b3) << 8)
 
 		builder.WriteString(fmt.Sprintf("[%d]", disp))
@@ -150,7 +167,7 @@ func handleRegToFromRegMem() {
 		rm_str = fmt.Sprintf("[%s]", base_str)
 	} else if mod_bits == 0b01 { // 8-bit Displacement
 		i++
-		b3 := prog[i]
+		b3 = prog[i]
 		disp := uint8(b3)
 
 		// The only way to use bp without an offset is to have a zero offset, b/c of the special
@@ -162,9 +179,9 @@ func handleRegToFromRegMem() {
 		}
 	} else if mod_bits == 0b10 { // 16-bit Displacement
 		i++
-		b3 := prog[i]
+		b3 = prog[i]
 		i++
-		b4 := prog[i]
+		b4 = prog[i]
 		disp := uint16(b3) | (uint16(b4) << 8)
 
 		if disp == 0 {
@@ -184,8 +201,13 @@ func handleRegToFromRegMem() {
 }
 
 // MOV 3
-func handleImmediateToReg() {
-	builder.WriteString("mov ")
+func movImmediateToReg() {
+	immediateToReg("mov")
+}
+
+// TODO: fix variable naming conventions, go snake?
+func immediateToReg(opCode string) {
+	builder.WriteString(fmt.Sprintf("%s ", opCode))
 
 	w_bit_on := b&0b00001000 != 0
 	reg_bits := b & 0b00000111
@@ -200,11 +222,11 @@ func handleImmediateToReg() {
 	builder.WriteString(fmt.Sprintf("%s, ", reg_str))
 
 	i++
-	b2 := prog[i]
+	b2 = prog[i]
 
 	if w_bit_on {
 		i++
-		b3 := prog[i]
+		b3 = prog[i]
 
 		value := uint16(b2) | (uint16(b3) << 8)
 
@@ -212,4 +234,61 @@ func handleImmediateToReg() {
 	} else {
 		builder.WriteString(fmt.Sprintf("%d", b2))
 	}
+}
+
+/*
+	Arithmetic
+		--> immediate to register/mem == 0b100000XX in first byte
+			--> "REG" spot on 2nd byte differentiates the op
+			--> see: p. 165-6 of manual
+
+		--> reg/mem and register == 0b00XXX0XX
+			--> XXX in the middle differentiates the op
+
+		--> immediate from accumulator == 0b00XXX1XX
+			--> XXX in the middle differentiates the op
+*/
+/*
+	--> immediate to register/mem == 0b100000XX in first byte
+	--> "REG" spot on 2nd byte differentiates the op
+	--> see: p. 165-6 of manual
+*/
+func arithmeticImmediateToReg() {
+	i++
+	b2 = prog[i]
+
+	op_bits := (b & 0b00111000) >> 3
+
+	// TODO dupes all over the place!
+	arithOpCodes := map[byte]string{
+		0b000: "add",
+		0b101: "sub",
+		0b111: "cmp",
+	}
+
+	op_code := arithOpCodes[op_bits]
+
+	immediateToReg(op_code)
+}
+
+// --> reg/mem and register == 0b00XXX0XX
+// --> XXX in the middle differentiates the op
+func arithmeticRegToFromRegMem() {
+	op_bits := (b & 0b00111000) >> 3
+
+	// TODO: move to top?? idk...
+	arithOpCodes := map[byte]string{
+		0b000: "add",
+		0b101: "sub",
+		0b111: "cmp",
+	}
+
+	op_code := arithOpCodes[op_bits]
+
+	regMemToFromEither(op_code)
+}
+
+// TODO: don't have the MOV version of this...
+func arithmeticImmediateFromAccum() {
+
 }
