@@ -1,4 +1,3 @@
-asm/listing_0041_add_sub_cmp_jnz
 add bx, [bx + si]
 add bx, [bp]
 add si 2
