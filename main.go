@@ -45,10 +45,11 @@ var rm_effective_map = map[byte]string{
 	0b111: "bx",
 }
 
-var prog []byte                     // all bytes
+var input []byte
 var i int                           // current index int = 0
 var b, b2, b3, b4, b5, b6 byte	    // current bytes (TODO: array? --> pointers?)
 var disassemBuilder strings.Builder // builds disassembly output
+var instructions []Instruction	    // Intermediate Representation
 
 var err error
 
@@ -56,22 +57,22 @@ var err error
 func loadByteNum(number int) {
 	switch number {
 	case 1:
-		b = prog[i]
+		b = input[i]
 	case 2:
 		i++
-		b2 = prog[i]
+		b2 = input[i]
 	case 3:
 		i++
-		b3 = prog[i]
+		b3 = input[i]
 	case 4:
 		i++
-		b4 = prog[i]
+		b4 = input[i]
 	case 5:
 		i++
-		b5 = prog[i]
+		b5 = input[i]
 	case 6:
 		i++
-		b6 = prog[i]
+		b6 = input[i]
 	}
 }
 
@@ -84,26 +85,26 @@ func main() {
 	fileName := os.Args[1]
 	fmt.Println(fileName)
 
-	prog, err = ioutil.ReadFile(fileName)
+	input, err = ioutil.ReadFile(fileName)
 	if err != nil {
 		panic(err)
 	}
 
-	for i = 0; i < len(prog); {
+	for i = 0; i < len(input); {
 		//b = prog[i]
 		loadByteNum(1)
 
-		if (b&0b11111100)^0b10001000 == 0 {
+		if (b&0b11111100) == 0b10001000 {
 			movRegToFromRegMem()
-		} else if (b&0b11110000)^0b10110000 == 0 {
+		} else if (b&0b11110000) == 0b10110000 {
 			movImmediateToReg()
-		} else if (b&0b11111100)^0b10000000 == 0 {
+		} else if (b&0b11111100) == 0b10000000 {
 			// immediate to register/mem == 0b100000XX in first byte
 			arithmeticImmediateToRegMem()
-		} else if (b&0b11000100)^0b00000000 == 0 {
+		} else if (b&0b11000100) == 0b00000000 {
 			// --> reg/mem and register == 0b00XXX0XX
 			arithmeticRegToFromRegMem()
-		} else if (b&0b11000110)^0b00000100 == 0 {
+		} else if (b&0b11000110) == 0b00000100 {
 			// --> immediate from accumulator == 0b00XXX10X
 			arithmeticImmediateToAccum()
 		} else {
