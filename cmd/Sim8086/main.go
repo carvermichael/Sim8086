@@ -16,7 +16,7 @@ func main() {
 	fileName := os.Args[1]
 	fmt.Println(fileName)
 
-	asm_string := GetASMFromFile(fileName)
+	asm_string, _ := GetASMFromFile(fileName)
 
 	fmt.Print(asm_string)
 

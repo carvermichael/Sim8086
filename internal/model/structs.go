@@ -3,7 +3,8 @@ package model
 type OpType uint8
 
 const (
-	OP_MOV OpType = iota
+	OP_NONE OpType = iota // OP_NONE necessary for blank spots in arr lookup -- see: arithOpCodes && jump switch default (unknown opCode)
+	OP_MOV 
 	OP_ADD
 	OP_SUB
 	OP_CMP
@@ -34,6 +35,7 @@ type OperandType uint8
 const (
 	REGISTER OperandType = iota
 	EFFECTIVE_ADDRESS
+	DIRECT_ADDRESS
 	S_IMMEDIATE
 	U_IMMEDIATE
 )
@@ -76,23 +78,25 @@ const (
 )
 
 type EffectiveAddress struct {
-	effectiveAddressBase EffectiveAddressBase
-	offset               uint16
+	EffectiveAddressBase EffectiveAddressBase
+	Offset               uint16
 }
 
 type Operand struct {
-	operandType OperandType
+	OperandType		OperandType
 
-	register         Register
-	effectiveAddress EffectiveAddress
-	s_immediate      int16
-	u_immediate      uint16
+	Register		Register
+	EffectiveAddress	EffectiveAddress
+	DirectAddress		uint16
+	Immediate_Low		byte
+	Immediate_High		byte
 }
 
-// TODO: need some way to represent that I want to specify byte/word in the (dis-)asm
 type Instruction struct {
-	operation OpType
+	Operation OpType
 
-	operand_1 Operand
-	operand_2 Operand
+	Operands  []Operand
+
+	Wide		bool
+	Specify_Size	bool
 }
