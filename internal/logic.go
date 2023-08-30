@@ -244,8 +244,6 @@ func getReg(reg_bits byte, w_bit_on bool) (string, Operand) {
 }
 
 // r/m field --> Effective Address Calc
-
-// TODO: rename --> get r/m string
 func getRegMemOperand(mod_bits byte, rm_bits byte, w_bit_on bool) (string, Operand) {
 
 	var rm_str string
@@ -655,7 +653,7 @@ func jumps() Instruction {
 
 	// TODO: don't like this at all, figure out better place for jump data
 	operand := Operand{
-		OperandType: U_IMMEDIATE,
+		OperandType: S_IMMEDIATE,
 		Immediate_Low: b2,
 	}
 	instruction.Operands = []Operand{

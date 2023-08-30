@@ -90,6 +90,7 @@ type Operand struct {
 	DirectAddress		uint16
 	Immediate_Low		byte
 	Immediate_High		byte
+	Wide			bool
 }
 
 type Instruction struct {
