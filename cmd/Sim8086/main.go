@@ -17,11 +17,13 @@ func main() {
 	fmt.Println(fileName)
 
 	instructions := GetASMFromFile(fileName)
-	asm_string   := PrintInstructions(instructions)
+	// asm_string   := PrintInstructions(instructions)
 
 	// TODO: add exec flag to this
 
-	fmt.Print(asm_string)
+	// fmt.Print(asm_string)
+
+	SimulateInstructions(instructions)
 
 	return
 }

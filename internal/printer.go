@@ -36,15 +36,7 @@ var opCodes = []string{
 	"jcxz",
 }
 
-var registers = []string{
-	"al",
-	"cl",
-	"dl",
-	"bl",
-	"ah",
-	"ch",
-	"dh",
-	"bh",
+var registers_str = []string{
 	"ax",
 	"cx",
 	"dx",
@@ -53,6 +45,14 @@ var registers = []string{
 	"bp",
 	"si",
 	"di",
+	"al",
+	"cl",
+	"dl",
+	"bl",
+	"ah",
+	"ch",
+	"dh",
+	"bh",
 }
 
 var effective_adds = []string{
@@ -71,13 +71,14 @@ func PrintInstructions(instructions []Instruction) string {
 	var b strings.Builder
 
 	for _, v := range instructions {
-		printInstruction(v, &b)
+		GetInstructionString(v, &b)
+		b.WriteString("\n")
 	}
 
 	return b.String()
 }
 
-func printInstruction(instruction Instruction, b *strings.Builder) {
+func GetInstructionString(instruction Instruction, b *strings.Builder) string {
 
 	// Op Mnemoic
 	(*b).WriteString(opCodes[instruction.Operation] + " ")
@@ -95,15 +96,14 @@ func printInstruction(instruction Instruction, b *strings.Builder) {
 		(*b).WriteString(" ")
 	}
 
-	// End line
-	(*b).WriteString("\n")
+	return b.String()
 }
 
 func printOperand(operand Operand, wide bool, b *strings.Builder) {
 	
 	switch operand.OperandType {
 	case REGISTER:
-		(*b).WriteString(registers[operand.Register])
+		(*b).WriteString(registers_str[operand.Register])
 		break
 	case EFFECTIVE_ADDRESS:
 		base := operand.EffectiveAddress.EffectiveAddressBase

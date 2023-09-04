@@ -412,83 +412,63 @@ func jumps() Instruction {
 	// jne/jnz
 	case 0b01110101:
 		instruction = Instruction{Operation: OP_JNE}
-		break
 	// je/jz
 	case 0b01110100:
 		instruction = Instruction{Operation: OP_JE}
-		break
 	// jl/jnge
 	case 0b01111100:
 		instruction = Instruction{Operation: OP_JL}
-		break
 	// jle/jng
 	case 0b01111110:
 		instruction = Instruction{Operation: OP_JLE}
-		break
 	// jb/jnae
 	case 0b01110010:
 		instruction = Instruction{Operation: OP_JB}
-		break
 	// jbe/jna
 	case 0b01110110:
 		instruction = Instruction{Operation: OP_JBE}
-		break
 	// jp/jpe
 	case 0b01111010:
 		instruction = Instruction{Operation: OP_JP}
-		break
 	// jo
 	case 0b01110000:
 		instruction = Instruction{Operation: OP_JO}
-		break
 	// js
 	case 0b01111000:
 		instruction = Instruction{Operation: OP_JS}
-		break
 	// jnl/jge
 	case 0b01111101:
 		instruction = Instruction{Operation: OP_JNL}
-		break
 	// jnle/jg
 	case 0b01111111:
 		instruction = Instruction{Operation: OP_JNLE}
-		break
 	// jnb/jae
 	case 0b01110011:
 		instruction = Instruction{Operation: OP_JNB}
-		break
 	// jnbe/ja
 	case 0b01110111:
 		instruction = Instruction{Operation: OP_JNBE}
-		break
 	// jnp/jpo
 	case 0b01111011:
 		instruction = Instruction{Operation: OP_JNP}
-		break
 	// jno
 	case 0b01110001:
 		instruction = Instruction{Operation: OP_JNO}
-		break
 	// jns
 	case 0b01111001:
 		instruction = Instruction{Operation: OP_JNS}
-		break
 	// loop
 	case 0b11100010:
 		instruction = Instruction{Operation: OP_LOOP}
-		break
 	// loopz/loope
 	case 0b11100001:
 		instruction = Instruction{Operation: OP_LOOPZ}
-		break
 	// loopnz/loopne
 	case 0b11100000:
 		instruction = Instruction{Operation: OP_LOOPNZ}
-		break
 	// jcxz
 	case 0b11100011:
 		instruction = Instruction{Operation: OP_JCXZ}
-		break
 	default:
 		instruction = Instruction{Operation: OP_NONE}
 		return instruction

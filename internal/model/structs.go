@@ -44,17 +44,8 @@ type Register uint8
 
 const (
 
-	// 8-bit
-	REG_AL Register = iota
-	REG_CL
-	REG_DL
-	REG_BL
-	REG_AH
-	REG_CH
-	REG_DH
-	REG_BH
 	// 16-bit
-	REG_AX
+	REG_AX Register = iota
 	REG_CX
 	REG_DX
 	REG_BX
@@ -62,6 +53,15 @@ const (
 	REG_BP
 	REG_SI
 	REG_DI
+	// 8-bit
+	REG_AL
+	REG_CL
+	REG_DL
+	REG_BL
+	REG_AH
+	REG_CH
+	REG_DH
+	REG_BH
 )
 
 type EffectiveAddressBase uint8
