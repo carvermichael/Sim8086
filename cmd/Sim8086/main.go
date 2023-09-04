@@ -16,7 +16,10 @@ func main() {
 	fileName := os.Args[1]
 	fmt.Println(fileName)
 
-	asm_string, _ := GetASMFromFile(fileName)
+	instructions := GetASMFromFile(fileName)
+	asm_string   := PrintInstructions(instructions)
+
+	// TODO: add exec flag to this
 
 	fmt.Print(asm_string)
 
